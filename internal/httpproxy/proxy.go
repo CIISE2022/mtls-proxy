@@ -20,10 +20,10 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/aporeto-inc/mtlsproxy/internal/configuration"
+	"github.com/CIISE2022/mtls-proxy/internal/configuration"
 )
 
-func makeHandleHTTP(dest string) func(w http.ResponseWriter, req *http.Request) {
+func makeHandleHTTP(dest string, tlsConfig *tls.Config) func(w http.ResponseWriter, req *http.Request) {
 
 	u, err := url.Parse(dest)
 	if err != nil {
@@ -33,12 +33,14 @@ func makeHandleHTTP(dest string) func(w http.ResponseWriter, req *http.Request) 
 	rewriteHost := u.Host
 	rewriteSchema := u.Scheme
 
+
 	return func(w http.ResponseWriter, req *http.Request) {
 
 		req.URL.Host = rewriteHost
 		req.URL.Scheme = rewriteSchema
+        req.Host = rewriteHost
 
-		resp, err := http.DefaultTransport.RoundTrip(req)
+        resp, err := (&http.Transport{TLSClientConfig: tlsConfig}).RoundTrip(req)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
 			return
@@ -65,12 +67,11 @@ func Start(cfg *configuration.Configuration, tlsConfig *tls.Config) {
 
 	server := &http.Server{
 		Addr:      cfg.ListenAddress,
-		TLSConfig: tlsConfig,
-		Handler:   http.HandlerFunc(makeHandleHTTP(cfg.Backend)),
+		Handler:   http.HandlerFunc(makeHandleHTTP(cfg.Backend, tlsConfig)),
 	}
 
 	go func() {
-		if err := server.ListenAndServeTLS("", ""); err != nil {
+		if err := server.ListenAndServe(); err != nil {
 			log.Fatalln("Unable to start proxy:", err)
 		}
 	}()

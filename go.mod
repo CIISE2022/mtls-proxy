@@ -1,4 +1,4 @@
-module github.com/aporeto-inc/mtlsproxy
+module github.com/CIISE2022/mtls-proxy
 
 go 1.23
 

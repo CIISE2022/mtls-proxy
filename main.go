@@ -13,15 +13,17 @@ package main
 
 import (
 	"crypto/tls"
+	"fmt"
 	"time"
 
-	"github.com/aporeto-inc/mtlsproxy/internal/configuration"
-	"github.com/aporeto-inc/mtlsproxy/internal/httpproxy"
-	"github.com/aporeto-inc/mtlsproxy/internal/tcpproxy"
+	"github.com/CIISE2022/mtls-proxy/internal/configuration"
+	"github.com/CIISE2022/mtls-proxy/internal/httpproxy"
+	"github.com/CIISE2022/mtls-proxy/internal/tcpproxy"
 )
 
 func main() {
 
+	fmt.Println("Configure")
 	cfg := configuration.NewConfiguration()
 
 	time.Local = time.UTC
@@ -29,12 +31,14 @@ func main() {
 	tlsConfig := &tls.Config{
 		ClientAuth:               tls.RequireAndVerifyClientCert,
 		ClientCAs:                cfg.ClientCAPool,
+		RootCAs:                  cfg.ClientCAPool,
 		MinVersion:               tls.VersionTLS13,
 		SessionTicketsDisabled:   true,
 		PreferServerCipherSuites: true,
 		Certificates:             cfg.ServerCertificates,
 	}
 
+	fmt.Println("Start")
 	switch cfg.Mode {
 	case "http":
 		httpproxy.Start(cfg, tlsConfig)

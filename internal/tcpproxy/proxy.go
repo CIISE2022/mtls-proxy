@@ -19,7 +19,7 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/aporeto-inc/mtlsproxy/internal/configuration"
+	"github.com/CIISE2022/mtls-proxy/internal/configuration"
 )
 
 type proxy struct {
@@ -39,7 +39,7 @@ func newProxy(from, to string, tlsConfig *tls.Config) *proxy {
 
 func (p *proxy) start(ctx context.Context) error {
 
-	listener, err := tls.Listen("tcp", p.from, p.tlsConfig)
+	listener, err := net.Listen("tcp", p.from)
 	if err != nil {
 		return err
 	}
@@ -62,7 +62,7 @@ func (p *proxy) start(ctx context.Context) error {
 func (p *proxy) handle(ctx context.Context, connection net.Conn) {
 
 	defer connection.Close() // nolint
-	remote, err := net.Dial("tcp", p.to)
+	remote, err := tls.Dial("tcp", p.to, p.tlsConfig)
 	if err != nil {
 		return
 	}
