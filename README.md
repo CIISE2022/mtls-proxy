@@ -4,6 +4,7 @@ MTLS proxy is a simple proxy service that runs as a sidecar of an unsecure servi
 
 ## example
 
+### With Environment variables
 ```bash
 export MTLSPROXY_LISTEN=":19443"
 export MTLSPROXY_LOG_LEVEL="info"
@@ -18,3 +19,10 @@ export MTLSPROXY_CLIENTS_CA="$CERTS_FOLDER/ca-auditers-cert.pem"
 
 ./mtlsproxy
 ```
+
+### With command line options
+```bash
+./mtlsproxy --backend <Your mTLS endpoint> --cert <Your Client Cert> --cert-key <Your Client Cert Key> --clients-ca <The CA to check the endpoint with> --listen :<The port to listen locally to>
+```
+## Result
+Then any `curl http://localhost:<The port to listen locally to>` is properly forwareded to the mtls endpoint
